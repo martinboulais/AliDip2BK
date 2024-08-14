@@ -24,7 +24,7 @@ public class AliDip2BK implements Runnable {
   static public String LIST_PARAM_PAT = "*";
   static public int DEBUG_LEVEL = 1;
   static public String OUTPUT_FILE = null;
-  public static String BKURL = "http://aliecs-kafka-1.cern.ch:4000";
+  static String bookkeepingUrl = "http://aliecs-kafka-1.cern.ch:4000";
   public static boolean SAVE_PARAMETERS_HISTORY_PER_RUN = false;
   public static String KEEP_RUNS_HISTORY_DIRECTORY = null;
   public static String KEEP_FILLS_HISTORY_DIRECTORY = null;
@@ -46,7 +46,7 @@ public class AliDip2BK implements Runnable {
   String confFile = "AliDip2BK.properties";
   DipClient client;
   DipMessagesProcessor process;
-  BookkeepingClient dbw;
+  BookkeepingClient bookkeepingClient;
   StartOfRunKafkaConsumer kcs;
   EndOfRunKafkaConsumer kce;
   private long stopDate;
@@ -63,8 +63,8 @@ public class AliDip2BK implements Runnable {
 
     verifyDirs();
 
-    dbw = new BookkeepingClient();
-    process = new DipMessagesProcessor(dbw);
+    bookkeepingClient = new BookkeepingClient(bookkeepingUrl);
+    process = new DipMessagesProcessor(bookkeepingClient);
 
     client = new DipClient(DipParametersFile, process);
 
@@ -149,7 +149,6 @@ public class AliDip2BK implements Runnable {
                           }
                           process.saveState();
                           writeStat("AliDip2BK.stat", true);
-                          dbw.close();
                         }
                       }
     );
@@ -163,7 +162,7 @@ public class AliDip2BK implements Runnable {
     con = con + "* DIP/DIM =" + DNSnode + "\n";
     con = con + "* KAFKA Server = " + bootstrapServers + "\n";
     con = con + "* KAFKA Group ID=" + KAFKA_group_id + "\n";
-    con = con + "* Bookkeeping URL =" + BKURL + "\n";
+    con = con + "* Bookkeeping URL =" + bookkeepingUrl + "\n";
     con = con + "* \n";
     con = con + "*************************************************\n";
 
@@ -282,7 +281,7 @@ public class AliDip2BK implements Runnable {
       String bkurl = prop.getProperty("BookkeepingURL");
 
       if (bkurl != null) {
-        BKURL = bkurl;
+        bookkeepingUrl = bkurl;
       }
 
 

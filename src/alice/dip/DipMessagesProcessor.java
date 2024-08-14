@@ -436,7 +436,7 @@ public class DipMessagesProcessor implements Runnable {
         RunInfoObj newrun = new RunInfoObj(date, RunNo, currentFill.clone(), currentAlice.clone());
         ActiveRuns.add(newrun);
         AliDip2BK.log(2, "ProcData.newRunSignal", " NEW RUN NO =" + RunNo + "  with FillNo=" + currentFill.fillNo);
-        BKDB.UpdateRun(newrun);
+        BKDB.updateRun(newrun);
 
         if (LastRunNumber == -1) {
           LastRunNumber = RunNo;
@@ -459,7 +459,7 @@ public class DipMessagesProcessor implements Runnable {
         RunInfoObj newrun = new RunInfoObj(date, RunNo, null, currentAlice.clone());
         ActiveRuns.add(newrun);
         AliDip2BK.log(2, "ProcData.newRunSignal", " NEW RUN NO =" + RunNo + " currentFILL is NULL Perhaps Cosmics Run");
-        BKDB.UpdateRun(newrun);
+        BKDB.updateRun(newrun);
       }
 
     } else {
@@ -520,7 +520,7 @@ public class DipMessagesProcessor implements Runnable {
 
     if (currentFill == null) {
       currentFill = new LhcInfoObj(date, no, par1, par2, ais, ip2Col, nob);
-      BKDB.X_InsertLHC(currentFill);
+      BKDB.createLhcFill(currentFill);
       saveState();
       AliDip2BK.log(2, "ProcData.newFillNo", " **CREATED new FILL no=" + no);
       statNoNewFills = statNoNewFills + 1;
@@ -530,7 +530,7 @@ public class DipMessagesProcessor implements Runnable {
       if (!ais.contains("no_value")) {
         boolean modi = currentFill.verifyAndUpdate(date, no, ais, ip2Col, nob);
         if (modi) {
-          BKDB.XUpdateFill(currentFill);
+          BKDB.updateLhcFill(currentFill);
           saveState();
           AliDip2BK.log(2, "ProcData.newFillNo", " * Update FILL no=" + no);
         }
@@ -543,11 +543,11 @@ public class DipMessagesProcessor implements Runnable {
       if (AliDip2BK.KEEP_FILLS_HISTORY_DIRECTORY != null) {
         writeFillHistFile(currentFill);
       }
-      BKDB.XUpdateFill(currentFill);
+      BKDB.updateLhcFill(currentFill);
 
       currentFill = null;
       currentFill = new LhcInfoObj(date, no, par1, par2, ais, ip2Col, nob);
-      BKDB.X_InsertLHC(currentFill);
+      BKDB.createLhcFill(currentFill);
       statNoNewFills = statNoNewFills + 1;
       saveState();
     }
@@ -565,12 +565,12 @@ public class DipMessagesProcessor implements Runnable {
       if (mc < 0) {
 
         AliDip2BK.log(2, "ProcData.newBeamMode", "New beam mode=" + BeamMode + "  for FILL_NO=" + currentFill.fillNo);
-        BKDB.XUpdateFill(currentFill);
+        BKDB.updateLhcFill(currentFill);
         saveState();
 
       } else {
         currentFill.endedTime = date;
-        BKDB.XUpdateFill(currentFill);
+        BKDB.updateLhcFill(currentFill);
         if (AliDip2BK.KEEP_FILLS_HISTORY_DIRECTORY != null) {
           writeFillHistFile(currentFill);
         }
