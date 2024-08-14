@@ -14,24 +14,15 @@
 package alice.dip;
 
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import cern.dip.DipData;
+import cern.dip.DipTimestamp;
+
+import java.io.*;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
-
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-
-
-import cern.dip.DipData;
-import cern.dip.DipTimestamp;
 
 
 public class ProcData implements Runnable {

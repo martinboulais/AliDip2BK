@@ -7,14 +7,14 @@
  */
 package alice.dip;
 
+import cern.dip.DipData;
+import cern.dip.DipTimestamp;
+import cern.dip.TypeMismatch;
+
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-
-import cern.dip.DipData;
-import cern.dip.DipTimestamp;
-import cern.dip.TypeMismatch;
 
 public class Util {
 
