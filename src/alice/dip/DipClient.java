@@ -207,7 +207,7 @@ public class DipClient implements Runnable {
 
       NoMess = NoMess + 1;
 
-      procData.addData(p_name, ans, message);
+      procData.handleMessage(p_name, ans, message);
 
     }
 

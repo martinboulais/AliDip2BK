@@ -34,7 +34,7 @@ public class AliDip2BK implements Runnable {
   public static String KAFKAtopic_EOR = "aliecs.env_leave_state.RUNNING";
   public static String KAFKA_group_id = "AliDip";
   public static String STORE_HIST_FILE_DIR = "HistFiles";
-  public static boolean SIMULATE_DIP_EVENTS = false;
+  private static boolean simulateDipEvents = false;
   public static SimpleDateFormat myDateFormat = new SimpleDateFormat("dd-MM-yy HH:mm");
   public static SimpleDateFormat logDateFormat = new SimpleDateFormat("dd-MM HH:mm:ss");
   public static double DIFF_ENERGY = 5;
@@ -42,17 +42,15 @@ public class AliDip2BK implements Runnable {
   public static double DIFF_CURRENT = 5;
   public static String ProgPath;
   private final long startDate;
-  public String DipParametersFile = null;
+  public String dipParametersFile = null;
   String confFile = "AliDip2BK.properties";
   DipClient client;
-  DipMessagesProcessor process;
-  BookkeepingClient bookkeepingClient;
+  DipMessagesProcessor dipMessagesProcessor;
   StartOfRunKafkaConsumer kcs;
   EndOfRunKafkaConsumer kce;
   private long stopDate;
 
   public AliDip2BK() {
-
     startDate = (new Date()).getTime();
 
     ProgPath = getClass().getClassLoader().getResource(".").getPath();
@@ -63,10 +61,15 @@ public class AliDip2BK implements Runnable {
 
     verifyDirs();
 
-    bookkeepingClient = new BookkeepingClient(bookkeepingUrl);
-    process = new DipMessagesProcessor(bookkeepingClient);
+    var bookkeepingClient = new BookkeepingClient(bookkeepingUrl);
+    var runManager = new RunManager();
 
-    client = new DipClient(DipParametersFile, process);
+    dipMessagesProcessor = new DipMessagesProcessor(bookkeepingClient, runManager);
+    if (simulateDipEvents) {
+      new SimDipEventsFill(dipMessagesProcessor);
+    }
+
+    client = new DipClient(dipParametersFile, dipMessagesProcessor);
 
     try {
       Thread.sleep(5000);
@@ -74,17 +77,15 @@ public class AliDip2BK implements Runnable {
       Thread.currentThread().interrupt();
     }
 
-    kcs = new StartOfRunKafkaConsumer(process);
+    kcs = new StartOfRunKafkaConsumer(dipMessagesProcessor);
 
-    kce = new EndOfRunKafkaConsumer(process);
+    kce = new EndOfRunKafkaConsumer(dipMessagesProcessor);
 
 
     shutdownProc();
 
     Thread t = new Thread(this);
     t.start();
-
-
   }
 
   static public void log(int level, String module, String mess) {
@@ -125,32 +126,30 @@ public class AliDip2BK implements Runnable {
 
   public void shutdownProc() {
     Runtime r = Runtime.getRuntime();
-    r.addShutdownHook(new Thread() {
-                        public void run() {
-                          log(4, "AliDip2BK", " Main class  ENTERS in Shutdown hook");
-                          client.closeSubscriptions();
-                          process.closeInputQueue();
-                          if (process.QueueSize() > 0) {
-                            for (int i = 0; i < 5; i++) {
-                              try {
-                                Thread.sleep(1000);
-                              } catch (InterruptedException ex) {
-                                Thread.currentThread().interrupt();
-                              }
+    r.addShutdownHook(new Thread(() -> {
+      log(4, "AliDip2BK", "Main class  ENTERS in Shutdown hook");
+      client.closeSubscriptions();
+      dipMessagesProcessor.closeInputQueue();
+      if (dipMessagesProcessor.queueSize() > 0) {
+        for (int i = 0; i < 5; i++) {
+          try {
+            Thread.sleep(1000);
+          } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+          }
 
-                              if (process.QueueSize() == 0) break;
-                            }
-                          }
+          if (dipMessagesProcessor.queueSize() == 0) break;
+        }
+      }
 
-                          if (process.QueueSize() != 0) {
-                            log(4, "AliDip2BK Shutdown", " Data Proc queue is not EMPTY ! Close it anyway ");
-                          } else {
-                            log(2, "AliDip2BK Shutdown", " Data Proc queue is EMPTY and it was correctly closed  ");
-                          }
-                          process.saveState();
-                          writeStat("AliDip2BK.stat", true);
-                        }
-                      }
+      if (dipMessagesProcessor.queueSize() != 0) {
+        log(4, "AliDip2BK Shutdown", " Data Proc queue is not EMPTY ! Close it anyway ");
+      } else {
+        log(2, "AliDip2BK Shutdown", " Data Proc queue is EMPTY and it was correctly closed  ");
+      }
+      dipMessagesProcessor.saveState();
+      writeStat("AliDip2BK.stat", true);
+    })
     );
   }
 
@@ -186,7 +185,7 @@ public class AliDip2BK implements Runnable {
       if (dns1 != null) {
         DNSnode = dns1;
       } else {
-        log(4, "AliDip2BK.loadConf", " DNSnode is undefined in the conf file ! Use defult=" + DNSnode);
+        log(4, "AliDip2BK.loadConf", " DNSNode is undefined in the conf file ! Use default=" + DNSnode);
       }
 
 
@@ -194,7 +193,7 @@ public class AliDip2BK implements Runnable {
 
       if (para_file_name != null) {
 
-        DipParametersFile = ProgPath + para_file_name;
+        dipParametersFile = ProgPath + para_file_name;
       } else {
         log(4, "AliDip2BK.loadConf", " Dip Data Providers Subscription  file name is undefined in the conf file ");
 
@@ -249,9 +248,9 @@ public class AliDip2BK implements Runnable {
       String sde = prop.getProperty("SIMULATE_DIP_EVENTS");
       if (sde != null) {
 
-        if (sde.equalsIgnoreCase("Y")) SIMULATE_DIP_EVENTS = true;
-        if (sde.equalsIgnoreCase("YES")) SIMULATE_DIP_EVENTS = true;
-        if (sde.equalsIgnoreCase("true")) SIMULATE_DIP_EVENTS = true;
+        if (sde.equalsIgnoreCase("Y")) simulateDipEvents = true;
+        if (sde.equalsIgnoreCase("YES")) simulateDipEvents = true;
+        if (sde.equalsIgnoreCase("true")) simulateDipEvents = true;
       }
 
       String kgid = prop.getProperty("KAFKA_group_id");
@@ -310,14 +309,14 @@ public class AliDip2BK implements Runnable {
     }
     mess = mess + " Duration [h]=" + dur + "\n";
     mess = mess + " Memory Used [MB]=" + usedMB + "\n";
-    mess = mess + " No of DIP messages=" + process.statNoDipMess + "\n";
-    mess = mess + " No of KAFKA  messages=" + process.statNoKafMess + "\n";
+    mess = mess + " No of DIP messages=" + dipMessagesProcessor.statNoDipMess + "\n";
+    mess = mess + " No of KAFKA  messages=" + dipMessagesProcessor.statNoKafMess + "\n";
     mess = mess + " No of KAFKA SOR messages=" + kcs.NoMess + "\n";
     mess = mess + " No of KAFKA EOR messages=" + kce.NoMess + "\n";
-    mess = mess + " No of new Fill messgaes =" + process.statNoNewFills + "\n";
-    mess = mess + " No of new Run messgaes =" + process.statNoNewRuns + "\n";
-    mess = mess + " No of end Run messages =" + process.statNoEndRuns + "\n";
-    mess = mess + " No of Duplicated end Run messages =" + process.statNoDuplicateEndRuns + "\n";
+    mess = mess + " No of new Fill messgaes =" + dipMessagesProcessor.statNoNewFills + "\n";
+    mess = mess + " No of new Run messgaes =" + dipMessagesProcessor.statNoNewRuns + "\n";
+    mess = mess + " No of end Run messages =" + dipMessagesProcessor.statNoEndRuns + "\n";
+    mess = mess + " No of Duplicated end Run messages =" + dipMessagesProcessor.statNoDuplicateEndRuns + "\n";
 
 
     try {
