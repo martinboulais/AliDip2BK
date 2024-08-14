@@ -15,9 +15,9 @@ public class RunInfoObj {
   public LhcInfoObj LHC_info_stop;
   public AliceInfoObj alice_info_start;
   public AliceInfoObj alice_info_stop;
-  public ArrayList<floatTS> energyHist;
-  public ArrayList<floatTS> l3_magnetHist;
-  public ArrayList<floatTS> DipoleMagnetHist;
+  public ArrayList<TimestampedFloat> energyHist;
+  public ArrayList<TimestampedFloat> l3_magnetHist;
+  public ArrayList<TimestampedFloat> DipoleMagnetHist;
   public long SOR_time;
   public long EOR_time;
 
@@ -26,9 +26,9 @@ public class RunInfoObj {
     SOR_time = sor_time;
     this.LHC_info_start = start;
     this.alice_info_start = alice_start;
-    energyHist = new ArrayList<floatTS>();
-    l3_magnetHist = new ArrayList<floatTS>();
-    DipoleMagnetHist = new ArrayList<floatTS>();
+    energyHist = new ArrayList<TimestampedFloat>();
+    l3_magnetHist = new ArrayList<TimestampedFloat>();
+    DipoleMagnetHist = new ArrayList<TimestampedFloat>();
   }
 
   public String toString() {
@@ -63,7 +63,7 @@ public class RunInfoObj {
       ans = ans + " History:: Energy\n";
 
       for (int i = 0; i < energyHist.size(); i++) {
-        floatTS a1 = energyHist.get(i);
+        TimestampedFloat a1 = energyHist.get(i);
         ans = ans + " - " + AliDip2BK.myDateFormat.format(a1.time) + "  " + a1.value + "\n";
       }
     }
@@ -72,7 +72,7 @@ public class RunInfoObj {
       ans = ans + " History:: L3 Magnet\n";
 
       for (int i = 0; i < l3_magnetHist.size(); i++) {
-        floatTS a1 = l3_magnetHist.get(i);
+        TimestampedFloat a1 = l3_magnetHist.get(i);
         ans = ans + " - " + AliDip2BK.myDateFormat.format(a1.time) + "  " + a1.value + "\n";
       }
     }
@@ -81,7 +81,7 @@ public class RunInfoObj {
       ans = ans + " History:: Dipole Magnet\n";
 
       for (int i = 0; i < DipoleMagnetHist.size(); i++) {
-        floatTS a1 = DipoleMagnetHist.get(i);
+        TimestampedFloat a1 = DipoleMagnetHist.get(i);
         ans = ans + " - " + AliDip2BK.myDateFormat.format(a1.time) + "  " + a1.value + "\n";
       }
     }
@@ -99,33 +99,33 @@ public class RunInfoObj {
 
 
     if (energyHist.size() == 0) {
-      floatTS t1 = new floatTS(time, v);
+      TimestampedFloat t1 = new TimestampedFloat(time, v);
       energyHist.add(t1);
       return;
     }
-    floatTS v1 = energyHist.get(energyHist.size() - 1);
+    TimestampedFloat v1 = energyHist.get(energyHist.size() - 1);
 
     double dif = Math.abs(v - v1.value) / v;
 
     if (dif < AliDip2BK.DIFF_ENERGY) {
       return;
     }
-    floatTS t1 = new floatTS(time, v);
+    TimestampedFloat t1 = new TimestampedFloat(time, v);
     energyHist.add(t1);
 
   }
 
   public void addL3_magnet(long time, float v) {
     if (l3_magnetHist.size() == 0) {
-      floatTS t2 = new floatTS(time, v);
+      TimestampedFloat t2 = new TimestampedFloat(time, v);
       l3_magnetHist.add(t2);
       return;
     }
-    floatTS v2 = l3_magnetHist.get(l3_magnetHist.size() - 1);
+    TimestampedFloat v2 = l3_magnetHist.get(l3_magnetHist.size() - 1);
     double dif = Math.abs(v - v2.value);
     if (dif < AliDip2BK.DIFF_CURRENT) {
     } else {
-      floatTS v4 = new floatTS(time, v);
+      TimestampedFloat v4 = new TimestampedFloat(time, v);
       l3_magnetHist.add(v4);
     }
 
@@ -133,17 +133,17 @@ public class RunInfoObj {
 
   public void addDipoleMagnet(long time, float v) {
     if (DipoleMagnetHist.size() == 0) {
-      floatTS t2 = new floatTS(time, v);
+      TimestampedFloat t2 = new TimestampedFloat(time, v);
       DipoleMagnetHist.add(t2);
       return;
     }
 
-    floatTS v2 = DipoleMagnetHist.get(DipoleMagnetHist.size() - 1);
+    TimestampedFloat v2 = DipoleMagnetHist.get(DipoleMagnetHist.size() - 1);
     double dif = Math.abs(v - v2.value);
 
     if (dif < AliDip2BK.DIFF_CURRENT) {
     } else {
-      floatTS v4 = new floatTS(time, v);
+      TimestampedFloat v4 = new TimestampedFloat(time, v);
       DipoleMagnetHist.add(v4);
     }
 

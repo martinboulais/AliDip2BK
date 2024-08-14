@@ -30,12 +30,12 @@ public class DipClient implements Runnable {
   DipBrowser dipBrowser;
   long MAX_TIME_TO_UPDATE = 60;// in s
   int NP = 0;
-  ProcData procData;
+  DipMessagesProcessor procData;
   HashMap<String, DipSubscription> SubscriptionMap = new HashMap<>();
   HashMap<String, DipData> DataMap = new HashMap<>();
 
 
-  public DipClient(String DipParametersFile, ProcData procData) {
+  public DipClient(String DipParametersFile, DipMessagesProcessor procData) {
 
     readParamFile(DipParametersFile);
 

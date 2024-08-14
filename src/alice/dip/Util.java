@@ -34,7 +34,7 @@ public class Util {
   // TYPE_STRING    8     TYPE_STRING_ARRAY         80
 
 
-  public static float meanTS(ArrayList<floatTS> tsa) {
+  public static float meanTS(ArrayList<TimestampedFloat> tsa) {
 
     int N = tsa.size();
     float ans = -1;
@@ -42,18 +42,18 @@ public class Util {
     if (N == 0) {
       ans = -1;
     } else if (N == 1) {
-      floatTS t = tsa.get(0);
+      TimestampedFloat t = tsa.get(0);
       ans = t.value;
     } else {
       double sum = 0.0;
 
       for (int i = 0; i < (tsa.size() - 1); i++) {
-        floatTS t1 = tsa.get(i);
-        floatTS t2 = tsa.get(i + 1);
+        TimestampedFloat t1 = tsa.get(i);
+        TimestampedFloat t2 = tsa.get(i + 1);
         sum = sum + (t1.value + t2.value) * ((double) (t2.time - t1.time));
       }
-      floatTS ts = tsa.get(0);
-      floatTS te = tsa.get(tsa.size() - 1);
+      TimestampedFloat ts = tsa.get(0);
+      TimestampedFloat te = tsa.get(tsa.size() - 1);
 
       double x = sum * 0.5 / ((double) (te.time - ts.time));
       ans = (float) x;

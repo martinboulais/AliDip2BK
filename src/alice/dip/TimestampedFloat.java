@@ -9,19 +9,12 @@ package alice.dip;
 
 import java.io.Serializable;
 
-public class floatTS implements Serializable {
-
-  /**
-   *
-   */
+public class TimestampedFloat implements Serializable {
   private static final long serialVersionUID = 1L;
   public long time;
   public float value;
 
-  public floatTS() {
-  }
-
-  public floatTS(long time, float value) {
+  public TimestampedFloat(long time, float value) {
     this.time = time;
     this.value = value;
   }

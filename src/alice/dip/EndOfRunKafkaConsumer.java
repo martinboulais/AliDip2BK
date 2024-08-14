@@ -18,14 +18,13 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
 
-public class KC_SOR implements Runnable {
+public class EndOfRunKafkaConsumer implements Runnable {
   public int NoMess = 0;
-  public boolean status = true;
+  public boolean state = true;
   Properties properties;
-  ProcData process;
+  DipMessagesProcessor process;
 
-
-  public KC_SOR(ProcData process) {
+  public EndOfRunKafkaConsumer(DipMessagesProcessor process) {
 
     String grp_id = AliDip2BK.KAFKA_group_id;
     this.process = process;
@@ -37,9 +36,8 @@ public class KC_SOR implements Runnable {
     properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
 
     properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, grp_id);
-    // properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,"earliest");
+    //properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,"earliest");
     properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
-
 
     // properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
     // properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, AlicePB.class);
@@ -55,28 +53,31 @@ public class KC_SOR implements Runnable {
     try (//creating consumer
          KafkaConsumer<String, byte[]> consumer = new KafkaConsumer<String, byte[]>(properties)) {
       //Subscribing
-      consumer.subscribe(Collections.singletonList(AliDip2BK.KAFKAtopic_SOR));
+      consumer.subscribe(Collections.singletonList(AliDip2BK.KAFKAtopic_EOR));
 
       while (true) {
         ConsumerRecords<String, byte[]> records = consumer.poll(Duration.ofMillis(100));
         for (ConsumerRecord<String, byte[]> record : records) {
+          NoMess = NoMess + 1;
+
+          // System.out.printf("Received Message topic =%s, partition =%s, offset = %d, key = %s, value = %s\n", record.topic(), record.partition(), record.offset(), record.key(), java.util.Arrays.toString(record.value()));
+          // System.out.println("Key: "+ record.key() + ", Value:" +record.value());
+
 
           byte[] cucu = record.value();
 
-          NoMess = NoMess + 1;
 
           try {
             NewStateNotification info = NewStateNotification.parseFrom(cucu);
-            AliDip2BK.log(1, "KC_SOR.run", "New Kafka mess; partition=" + record.partition() + " offset=" + record.offset() + " L=" + cucu.length + " RUN=" + info.getEnvInfo().getRunNumber() + "  " + info.getEnvInfo().getState() + " ENVID = " + info.getEnvInfo().getEnvironmentId());
+            AliDip2BK.log(1, "KC_EOR.run", "New Kafka mess; partition=" + record.partition() + " offset=" + record.offset() + " L=" + cucu.length + " RUN=" + info.getEnvInfo().getRunNumber() + "  " + info.getEnvInfo().getState() + " ENVID = " + info.getEnvInfo().getEnvironmentId());
 
 
             long time = info.getTimestamp();
             int rno = info.getEnvInfo().getRunNumber();
 
-            process.newRunSignal(time, rno);
+            process.stopRunSignal(time, rno);
           } catch (InvalidProtocolBufferException e) {
-            AliDip2BK.log(4, "KC_SOR.run", "ERROR pasing data into obj e=" + e);
-            status = false;
+            AliDip2BK.log(4, "KC_EOR.run", "ERROR pasing data into obj e=" + e);
             // TODO Auto-generated catch block
             e.printStackTrace();
           }

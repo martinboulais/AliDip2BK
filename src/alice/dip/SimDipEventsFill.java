@@ -12,7 +12,7 @@ import java.util.Date;
 
 public class SimDipEventsFill implements Runnable {
 
-  ProcData myProcData;
+  DipMessagesProcessor myProcData;
 
 //	String [] BeamModeList = {"NOMODE","SETUP","INJECTION PROBE BEAM","INJECTION SETUP BEAM","INJECTION PHYSICS BEAM","PREPARE RAMP","RAMP","FLAT TOP","SQUEEZE","ADJUST","STABLE BEAMS","UNSTABLE BEAMS","BEAM DUMP","RAMP DOWN","RECOVERY","INJECT AND DUMP","CIRCULATE AND DUMP","ABORT","CYCLING","WARNING BEAM DUMP","NO BEAM" };
 
@@ -46,7 +46,7 @@ public class SimDipEventsFill implements Runnable {
   int NM = 10;
 
 
-  public SimDipEventsFill(ProcData proc) {
+  public SimDipEventsFill(DipMessagesProcessor proc) {
     myProcData = proc;
 
     Thread t = new Thread(this);

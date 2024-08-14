@@ -15,14 +15,14 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 
 
-public class BKwriter {
+public class BookkeepingClient {
 
 
   //private static String path;
   HttpClient httpClient;
 
 
-  public BKwriter() {
+  public BookkeepingClient() {
     //path = getClass().getClassLoader().getResource(".").getPath();
 
     httpClient = HttpClient.newBuilder()

@@ -45,10 +45,10 @@ public class AliDip2BK implements Runnable {
   public String DipParametersFile = null;
   String confFile = "AliDip2BK.properties";
   DipClient client;
-  ProcData process;
-  BKwriter dbw;
-  KC_SOR kcs;
-  KC_EOR kce;
+  DipMessagesProcessor process;
+  BookkeepingClient dbw;
+  StartOfRunKafkaConsumer kcs;
+  EndOfRunKafkaConsumer kce;
   private long stopDate;
 
   public AliDip2BK() {
@@ -63,8 +63,8 @@ public class AliDip2BK implements Runnable {
 
     verifyDirs();
 
-    dbw = new BKwriter();
-    process = new ProcData(dbw);
+    dbw = new BookkeepingClient();
+    process = new DipMessagesProcessor(dbw);
 
     client = new DipClient(DipParametersFile, process);
 
@@ -74,9 +74,9 @@ public class AliDip2BK implements Runnable {
       Thread.currentThread().interrupt();
     }
 
-    kcs = new KC_SOR(process);
+    kcs = new StartOfRunKafkaConsumer(process);
 
-    kce = new KC_EOR(process);
+    kce = new EndOfRunKafkaConsumer(process);
 
 
     shutdownProc();

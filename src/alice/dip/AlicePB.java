@@ -3,6 +3,7 @@
 
 package alice.dip;
 
+// FIXME : this might be better to regenerate every time using a protobuf file?
 public final class AlicePB {
   private AlicePB() {}
   public static void registerAllExtensions(
