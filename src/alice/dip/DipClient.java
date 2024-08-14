@@ -24,15 +24,12 @@ import java.util.Map;
 
 public class DipClient implements Runnable {
 
+  public int NoMess = 0;
+  public boolean status = true;
   DipFactory dip;
   DipBrowser dipBrowser;
   long MAX_TIME_TO_UPDATE = 60;// in s
-
   int NP = 0;
-
-  public int NoMess = 0;
-  public boolean status = true;
-
   ProcData procData;
   HashMap<String, DipSubscription> SubscriptionMap = new HashMap<>();
   HashMap<String, DipData> DataMap = new HashMap<>();
@@ -120,6 +117,80 @@ public class DipClient implements Runnable {
     AliDip2BK.log(1, "DipClient.CloseSubscriptions", " Succesfuly closed all DIP Subscriptions");
   }
 
+  public void list() {
+    String[] list = dipBrowser.getPublications(AliDip2BK.LIST_PARAM_PAT);
+    AliDip2BK.log(1, "DipClient.list", " Size of the Data Providers =" + list.length);
+    for (int i = 0; i < list.length; i++) {
+      // System.out.println ( "  i="+i + " PROVIDER="+ list[i] );
+      System.out.println(list[i]);
+      try {
+        String[] tags = dipBrowser.getTags(list[i]);
+        if (tags.length > 1) {
+          for (int j = 0; j < tags.length; j++) {
+            System.out.println("   * j=" + j + " TAG=" + tags[j]);
+          }
+        }
+      } catch (DipException e) {
+
+        e.printStackTrace();
+      }
+
+    }
+  }
+
+  public void verifyData() {
+
+    for (Map.Entry<String, DipData> m : DataMap.entrySet()) {
+      String k = m.getKey();
+
+      DipData d1 = m.getValue();
+
+      if (d1 == null) {
+        DipSubscription ds = SubscriptionMap.get(k);
+        ds.requestUpdate();
+      } else {
+        DipTimestamp ts = d1.extractDipTime();
+        long tf = (new Date().getTime() - ts.getAsMillis());
+        if (tf > MAX_TIME_TO_UPDATE * 1000) {
+          DipSubscription ds = SubscriptionMap.get(k);
+          ds.requestUpdate();
+        }
+      }
+    }
+  }
+
+  public void readParamFile(String file_name) {
+
+    File file = new File(file_name);
+    BufferedReader br;
+    String st;
+    NP = 0;
+    try {
+      br = new BufferedReader(new FileReader(file));
+
+      while ((st = br.readLine()) != null) {
+
+        String pi = st.trim();
+        if (!pi.startsWith("#")) {
+
+          if (!SubscriptionMap.containsKey(pi)) {
+            SubscriptionMap.put(pi, null);
+            NP = NP + 1;
+          } else {
+            AliDip2BK.log(3, "DipClient.readParam", " DUPLICATE Parameter =" + pi);
+
+          }
+        }
+      }
+    } catch (IOException e) {
+      AliDip2BK.log(4, "DipClient.readParam", " ERROR reading paramter file=" + file + "ex=" + e);
+      //e.printStackTrace();
+    }
+    AliDip2BK.log(1, "DipClient.readParam", " Configuration:  number of parameters NP=" + NP);
+
+
+  }
+
   /**
    * handler for connect/disconnect/data reception events
    */
@@ -166,81 +237,6 @@ public class DipClient implements Runnable {
 
 
     }
-  }
-
-  public void list() {
-    String[] list = dipBrowser.getPublications(AliDip2BK.LIST_PARAM_PAT);
-    AliDip2BK.log(1, "DipClient.list", " Size of the Data Providers =" + list.length);
-    for (int i = 0; i < list.length; i++) {
-      // System.out.println ( "  i="+i + " PROVIDER="+ list[i] );
-      System.out.println(list[i]);
-      try {
-        String[] tags = dipBrowser.getTags(list[i]);
-        if (tags.length > 1) {
-          for (int j = 0; j < tags.length; j++) {
-            System.out.println("   * j=" + j + " TAG=" + tags[j]);
-          }
-        }
-      } catch (DipException e) {
-
-        e.printStackTrace();
-      }
-
-    }
-  }
-
-  public void verifyData() {
-
-    for (Map.Entry<String, DipData> m : DataMap.entrySet()) {
-      String k = m.getKey();
-
-      DipData d1 = m.getValue();
-
-      if (d1 == null) {
-        DipSubscription ds = SubscriptionMap.get(k);
-        ds.requestUpdate();
-      } else {
-        DipTimestamp ts = d1.extractDipTime();
-        long tf = (new Date().getTime() - ts.getAsMillis());
-        if (tf > MAX_TIME_TO_UPDATE * 1000) {
-          DipSubscription ds = SubscriptionMap.get(k);
-          ds.requestUpdate();
-        }
-      }
-    }
-  }
-
-
-  public void readParamFile(String file_name) {
-
-    File file = new File(file_name);
-    BufferedReader br;
-    String st;
-    NP = 0;
-    try {
-      br = new BufferedReader(new FileReader(file));
-
-      while ((st = br.readLine()) != null) {
-
-        String pi = st.trim();
-        if (!pi.startsWith("#")) {
-
-          if (!SubscriptionMap.containsKey(pi)) {
-            SubscriptionMap.put(pi, null);
-            NP = NP + 1;
-          } else {
-            AliDip2BK.log(3, "DipClient.readParam", " DUPLICATE Parameter =" + pi);
-
-          }
-        }
-      }
-    } catch (IOException e) {
-      AliDip2BK.log(4, "DipClient.readParam", " ERROR reading paramter file=" + file + "ex=" + e);
-      //e.printStackTrace();
-    }
-    AliDip2BK.log(1, "DipClient.readParam", " Configuration:  number of parameters NP=" + NP);
-
-
   }
 
 }

@@ -24,24 +24,20 @@ public class LhcInfoObj implements Serializable {
   public long endedTime = -1;
   public String Beam1ParticleType;
   public String Beam2ParticleType;
-
-  private float beamEnergy;
   public String beamType;
   public int LHCTotalInteractingBunches;
   public int LHCTotalNonInteractingBuchesBeam1;
   public int LHCTotalNonInteractingBuchesBeam2;
-  private float LHCBetaStar;
   public String LHCFillingSchemeName;
-
   public int IP2_NO_COLLISIONS;
   public int NO_BUNCHES;
-
   public ArrayList<floatTS> beamEnergyHist;
   public ArrayList<floatTS> LHCBetaStarHist;
-
   public ArrayList<strTS> beamModeHist;
   public ArrayList<strTS> FillingSchemeHist;
   public ArrayList<strTS> ActiveFillingSchemeHist;
+  private float beamEnergy;
+  private float LHCBetaStar;
 
   public LhcInfoObj() {
   }

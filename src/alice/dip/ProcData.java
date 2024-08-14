@@ -30,31 +30,21 @@ public class ProcData implements Runnable {
 
 //	HashMap<String, DipData> DataMap; 
 
-  boolean acceptData = true;
-
-  LhcInfoObj currentFill = null;
-
-  AliceInfoObj currentAlice = null;
-
-  public BKwriter BKDB;
-
-  SimDipEventsFill simFill;
-  //SimDipEventsRun  simRun;
-
-  ArrayList<RunInfoObj> ActiveRuns = new ArrayList<RunInfoObj>();
-
   private final BlockingQueue<MessageItem> outputQueue = new ArrayBlockingQueue<MessageItem>(100);
-
-
+  public BKwriter BKDB;
   public int statNoDipMess = 0;
   public int statNoKafMess = 0;
   public int statNoNewFills = 0;
+  //SimDipEventsRun  simRun;
   public int statNoNewRuns = 0;
   public int statNoEndRuns = 0;
   public int statNoDuplicateEndRuns = 0;
-
-
   public int LastRunNumber = -1;
+  boolean acceptData = true;
+  LhcInfoObj currentFill = null;
+  AliceInfoObj currentAlice = null;
+  SimDipEventsFill simFill;
+  ArrayList<RunInfoObj> ActiveRuns = new ArrayList<RunInfoObj>();
 
   public ProcData(BKwriter BKDB) {
 

@@ -19,11 +19,10 @@ import java.util.Collections;
 import java.util.Properties;
 
 public class KC_SOR implements Runnable {
-  Properties properties;
-  ProcData process;
-
   public int NoMess = 0;
   public boolean status = true;
+  Properties properties;
+  ProcData process;
 
 
   public KC_SOR(ProcData process) {

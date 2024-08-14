@@ -19,11 +19,10 @@ import java.util.Collections;
 import java.util.Properties;
 
 public class KC_EOR implements Runnable {
-  Properties properties;
-  ProcData process;
-
   public int NoMess = 0;
   public boolean state = true;
+  Properties properties;
+  ProcData process;
 
   public KC_EOR(ProcData process) {
 
